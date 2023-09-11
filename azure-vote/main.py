@@ -63,21 +63,9 @@ middleware = FlaskMiddleware(
 
 # Load configurations from environment or config file
 app.config.from_pyfile('config_file.cfg')
-
-if ("VOTE1VALUE" in os.environ and os.environ['VOTE1VALUE']):
-    button1 = os.environ['VOTE1VALUE']
-else:
-    button1 = app.config['VOTE1VALUE']
-
-if ("VOTE2VALUE" in os.environ and os.environ['VOTE2VALUE']):
-    button2 = os.environ['VOTE2VALUE']
-else:
-    button2 = app.config['VOTE2VALUE']
-
-if ("TITLE" in os.environ and os.environ['TITLE']):
-    title = os.environ['TITLE']
-else:
-    title = app.config['TITLE']
+button1 = 'Cats'
+button2 = 'Dogs'
+title = 'Azure Voting App'
 
 # Redis Connection to a local server running on the same machine where the current FLask app is running. 
 r = redis.Redis()
