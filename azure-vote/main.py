@@ -9,82 +9,41 @@ from datetime import datetime
 
 # App Insights
 # TODO: Import required libraries for App Insights
-from opencensus.ext.azure.log_exporter import AzureLogHandler
-from opencensus.ext.azure.log_exporter import AzureEventHandler
-from opencensus.ext.azure import metrics_exporter
-from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats import measure as measure_module
-from opencensus.stats import stats as stats_module
-from opencensus.stats import view as view_module
-from opencensus.tags import tag_map as tag_map_module
-from opencensus.trace import config_integration
-from opencensus.ext.azure.trace_exporter import AzureExporter
-from opencensus.trace.samplers import ProbabilitySampler
-from opencensus.trace.tracer import Tracer
-from opencensus.ext.flask.flask_middleware import FlaskMiddleware
-
-# For metrics
-stats = stats_module.stats
-view_manager = stats.view_manager
 
 # Logging
-config_integration.trace_integrations(['logging'])
-config_integration.trace_integrations(['requests'])
-logger = logging.getLogger(__name__)
-
-handler = AzureLogHandler(connection_string='InstrumentationKey=2ee994f6-9f86-41cd-8d3e-c1ca680f05b9')
-handler.setFormatter(logging.Formatter('%(traceId)s %(spanId)s %(message)s'))
-logger.addHandler(handler)
-
-logger.addHandler(AzureEventHandler(connection_string='InstrumentationKey=2ee994f6-9f86-41cd-8d3e-c1ca680f05b9'))
-logger.setLevel(logging.INFO)
+logger = # TODO: Setup logger
 
 # Metrics
-exporter = metrics_exporter.new_metrics_exporter(
-  enable_standard_metrics=True,
-  connection_string='InstrumentationKey=2ee994f6-9f86-41cd-8d3e-c1ca680f05b9')
-
-view_manager.register_exporter(exporter)
+exporter = # TODO: Setup exporter
 
 # Tracing
-tracer = Tracer(
-    exporter=AzureExporter(
-        connection_string='InstrumentationKey=2ee994f6-9f86-41cd-8d3e-c1ca680f05b9'),
-    sampler=ProbabilitySampler(1.0),
-)
+tracer = # TODO: Setup tracer
+
 app = Flask(__name__)
 
 # Requests
-middleware = FlaskMiddleware(
-    app,
-    exporter=AzureExporter(connection_string="InstrumentationKey=2ee994f6-9f86-41cd-8d3e-c1ca680f05b9"),
-    sampler=ProbabilitySampler(rate=1.0)
-)
+middleware = # TODO: Setup flask middleware
 
 # Load configurations from environment or config file
 app.config.from_pyfile('config_file.cfg')
-button1 = 'Cats'
-button2 = 'Dogs'
-title = 'Azure Voting App'
 
-# Redis Connection to a local server running on the same machine where the current FLask app is running. 
+if ("VOTE1VALUE" in os.environ and os.environ['VOTE1VALUE']):
+    button1 = os.environ['VOTE1VALUE']
+else:
+    button1 = app.config['VOTE1VALUE']
+
+if ("VOTE2VALUE" in os.environ and os.environ['VOTE2VALUE']):
+    button2 = os.environ['VOTE2VALUE']
+else:
+    button2 = app.config['VOTE2VALUE']
+
+if ("TITLE" in os.environ and os.environ['TITLE']):
+    title = os.environ['TITLE']
+else:
+    title = app.config['TITLE']
+
+# Redis Connection
 r = redis.Redis()
-
-redis_server = '127.0.0.1'
-redis_port = '6379'
-
-# Redis Connection to another container
-try:
-    r = redis.Redis(
-        host=redis_server,
-        port=redis_port,
-        decode_responses=True
-    )
-
-    r.ping()
-    print('Connected to Redis successfully.')
-except redis.ConnectionError:
-    exit('Failed to connect to Redis, terminating.')
 
 # Change title to host name to demo NLB
 if app.config['SHOWHOST'] == "true":
@@ -102,13 +61,8 @@ def index():
         # Get current values
         vote1 = r.get(button1).decode('utf-8')
         # TODO: use tracer object to trace cat vote
-        with tracer.span(name="Cats Vote") as span:
-            print("Cats Vote")
-
         vote2 = r.get(button2).decode('utf-8')
         # TODO: use tracer object to trace dog vote
-        with tracer.span(name="Dogs Vote") as span:
-            print("Dogs Vote")
 
         # Return index with values
         return render_template("index.html", value1=int(vote1), value2=int(vote2), button1=button1, button2=button2, title=title)
@@ -123,12 +77,10 @@ def index():
             vote1 = r.get(button1).decode('utf-8')
             properties = {'custom_dimensions': {'Cats Vote': vote1}}
             # TODO: use logger object to log cat vote
-            logger.info('Cats Vote', extra=properties)
 
             vote2 = r.get(button2).decode('utf-8')
             properties = {'custom_dimensions': {'Dogs Vote': vote2}}
             # TODO: use logger object to log dog vote
-            logger.info('Dogs Vote', extra=properties)
 
             return render_template("index.html", value1=int(vote1), value2=int(vote2), button1=button1, button2=button2, title=title)
 
@@ -140,21 +92,13 @@ def index():
 
             # Get current values
             vote1 = r.get(button1).decode('utf-8')
-            properties = {'custom_dimensions': {'Cats Vote': vote1}}
-            # TODO: use logger object to log cat vote
-            logger.info('Cats Vote', extra=properties)
-
             vote2 = r.get(button2).decode('utf-8')
-            properties = {'custom_dimensions': {'Dogs Vote': vote2}}
-            # TODO: use logger object to log dog vote
-            logger.info('Dogs Vote', extra=properties)            
 
             # Return results
             return render_template("index.html", value1=int(vote1), value2=int(vote2), button1=button1, button2=button2, title=title)
 
 if __name__ == "__main__":
-    # comment line below when deploying to VMSS
-    # app.run() # local
-    # uncomment the line below before deployment to VMSS
-    app.run(host='0.0.0.0', threaded=True, debug=True) # remote
-    #app.run(host='localhost', port=8080, threaded=True, debug=True)
+    # TODO: Use the statement below when running locally
+    app.run() 
+    # TODO: Use the statement below before deployment to VMSS
+    # app.run(host='0.0.0.0', threaded=True, debug=True) # remote
