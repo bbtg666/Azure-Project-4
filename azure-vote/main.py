@@ -82,7 +82,8 @@ else:
 # Redis Connection to a local server running on the same machine where the current FLask app is running. 
 r = redis.Redis()
 
-redis_server = os.environ['REDIS']
+redis_server = '127.0.0.1'
+redis_port = '6379'
 
 # Redis Connection to another container
 try:
@@ -91,7 +92,7 @@ try:
         port=redis_port,
         decode_responses=True
     )
-    
+
     r.ping()
     print('Connected to Redis successfully.')
 except redis.ConnectionError:
