@@ -18,7 +18,8 @@ from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 stats = stats_module.stats
 view_manager = stats.view_manager
 app = Flask(__name__)
-applicationInsightsKey = app.config['APPLIGHTCATIONINSIGHTS']
+app.config.from_pyfile('config_file.cfg')
+applicationInsightsKey = app.config['APPLIGHTCATION_INSIGHTS']
 
 # Logging
 config_integration.trace_integrations(['logging'])
@@ -41,7 +42,6 @@ tracer = Tracer(exporter=AzureExporter(connection_string=f'InstrumentationKey={a
 middleware = FlaskMiddleware(app,exporter=AzureExporter(connection_string=f"InstrumentationKey={applicationInsightsKey}"),sampler=ProbabilitySampler(rate=1.0))
 
 # Load configurations from environment or config file
-app.config.from_pyfile('config_file.cfg')
 
 if ("VOTE1VALUE" in os.environ and os.environ['VOTE1VALUE']):
     button1 = os.environ['VOTE1VALUE']
@@ -59,8 +59,8 @@ else:
     title = app.config['TITLE']
 
 # Redis Connection
-
 r = redis.Redis()
+
 
 # Change title to host name to demo NLB
 if app.config['SHOWHOST'] == "true":
