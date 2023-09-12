@@ -8,15 +8,10 @@ import logging
 from datetime import datetime
 
 # App Insights
-# TODO: Import required libraries for App Insights
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 from opencensus.ext.azure.log_exporter import AzureEventHandler
 from opencensus.ext.azure import metrics_exporter
-from opencensus.stats import aggregation as aggregation_module
-from opencensus.stats import measure as measure_module
 from opencensus.stats import stats as stats_module
-from opencensus.stats import view as view_module
-from opencensus.tags import tag_map as tag_map_module
 from opencensus.trace import config_integration
 from opencensus.ext.azure.trace_exporter import AzureExporter
 from opencensus.trace.samplers import ProbabilitySampler
@@ -25,26 +20,28 @@ from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 
 stats = stats_module.stats
 view_manager = stats.view_manager
+app = Flask(__name__)
+applicationInsightsKey = app.config['APPLIGHTCATION_INSIGHTS']
 
 # Logging
 config_integration.trace_integrations(['logging'])
 config_integration.trace_integrations(['requests'])
-logger = logging.getLogger(__name__) # TODO: Setup logger
-handler = AzureLogHandler(connection_string='InstrumentationKey=b96f45b0-71ad-4a6f-a589-5566f9d17543')
+logger = logging.getLogger(__name__)
+handler = AzureLogHandler(connection_string=f'InstrumentationKey={applicationInsightsKey}')
 handler.setFormatter(logging.Formatter('%(message)s'))
 logger.addHandler(handler)
-logger.addHandler(AzureEventHandler(connection_string='InstrumentationKey=b96f45b0-71ad-4a6f-a589-5566f9d17543'))
+logger.addHandler(AzureEventHandler(connection_string=f'InstrumentationKey={applicationInsightsKey}'))
 logger.setLevel(logging.INFO)
-# Metrics
-exporter = metrics_exporter.new_metrics_exporter(enable_standard_metrics=True,connection_string='InstrumentationKey=b96f45b0-71ad-4a6f-a589-5566f9d17543') # TODO: Setup exporter
-view_manager.register_exporter(exporter)
-# Tracing
-tracer = Tracer(exporter=AzureExporter(connection_string='InstrumentationKey=b96f45b0-71ad-4a6f-a589-5566f9d17543'),sampler=ProbabilitySampler(1.0),) # TODO: Setup tracer
 
-app = Flask(__name__)
+# Metrics
+exporter = metrics_exporter.new_metrics_exporter(enable_standard_metrics=True,connection_string=f'InstrumentationKey={applicationInsightsKey}')
+view_manager.register_exporter(exporter)
+
+# Tracing
+tracer = Tracer(exporter=AzureExporter(connection_string=f'InstrumentationKey={applicationInsightsKey}'),sampler=ProbabilitySampler(1.0),)
 
 # Requests
-middleware = FlaskMiddleware(app,exporter=AzureExporter(connection_string="InstrumentationKey=b96f45b0-71ad-4a6f-a589-5566f9d17543"),sampler=ProbabilitySampler(rate=1.0)) # TODO: Setup flask middleware
+middleware = FlaskMiddleware(app,exporter=AzureExporter(connection_string=f"InstrumentationKey={applicationInsightsKey}"),sampler=ProbabilitySampler(rate=1.0))
 
 # Load configurations from environment or config file
 app.config.from_pyfile('config_file.cfg')
@@ -102,11 +99,11 @@ def index():
             r.set(button2,0)
             vote1 = r.get(button1).decode('utf-8')
             properties = {'custom_dimensions': {'Cats Vote': vote1}}
-            logger.info('Cats Vote', extra=properties) # TODO: use logger object to log cat vote
+            logger.info('Cats Vote', extra=properties)
 
             vote2 = r.get(button2).decode('utf-8')
             properties = {'custom_dimensions': {'Dogs Vote': vote2}}
-            logger.info('Dogs Vote', extra=properties) # TODO: use logger object to log dog vote
+            logger.info('Dogs Vote', extra=properties)
 
             return render_template("index.html", value1=int(vote1), value2=int(vote2), button1=button1, button2=button2, title=title)
 
