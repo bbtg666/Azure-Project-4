@@ -1,11 +1,8 @@
 from flask import Flask, request, render_template
 import os
-import random
 import redis
 import socket
-import sys
 import logging
-from datetime import datetime
 
 # App Insights
 from opencensus.ext.azure.log_exporter import AzureLogHandler
