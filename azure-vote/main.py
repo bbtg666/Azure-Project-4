@@ -18,7 +18,7 @@ from opencensus.ext.flask.flask_middleware import FlaskMiddleware
 stats = stats_module.stats
 view_manager = stats.view_manager
 app = Flask(__name__)
-applicationInsightsKey = app.config['APPLIGHTCATION_INSIGHTS']
+applicationInsightsKey = app.config['APPLIGHTCATIONINSIGHTS']
 
 # Logging
 config_integration.trace_integrations(['logging'])
@@ -59,6 +59,7 @@ else:
     title = app.config['TITLE']
 
 # Redis Connection
+
 r = redis.Redis()
 
 # Change title to host name to demo NLB
